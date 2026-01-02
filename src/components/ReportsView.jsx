@@ -40,6 +40,90 @@ const MONTHS = [
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B9D']
 
+const CURRENCY_SYMBOLS = { USD: '$', ILS: '₪', GBP: '£', EURO: '€' }
+
+// Helpers to draw pie chart slices as SVG paths
+function polarToCartesian(cx, cy, radius, angleInDegrees) {
+  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0
+  return {
+    x: cx + radius * Math.cos(angleInRadians),
+    y: cy + radius * Math.sin(angleInRadians)
+  }
+}
+
+function describeSlicePath(cx, cy, radius, startAngle, endAngle) {
+  const start = polarToCartesian(cx, cy, radius, endAngle)
+  const end = polarToCartesian(cx, cy, radius, startAngle)
+  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
+  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`
+}
+
+function PieChart({ data = [], size = 200, currencySymbol = '' }) {
+  const cx = size / 2
+  const cy = size / 2
+  const radius = Math.min(cx, cy)
+  const total = data.reduce((s, d) => s + d.value, 0)
+  // Precompute slice start/end angles to avoid mutating during render
+  if (total === 0) {
+    return (
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle cx={cx} cy={cy} r={radius} fill="#f5f5f5" stroke="#e0e0e0" />
+        </svg>
+        <Box>
+          {data.map((slice, i) => (
+            <Box key={slice.name} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Box sx={{ width: 12, height: 12, backgroundColor: slice.color || COLORS[i % COLORS.length], borderRadius: '2px' }} />
+              <Typography variant="body2" sx={{ minWidth: 120 }}>{slice.name}</Typography>
+              <Typography variant="body2" fontWeight="bold">{currencySymbol}{slice.value.toFixed(2)}</Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1 }}>(0%)</Typography>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+    )
+  }
+
+  const slices = []
+  let cum = 0
+  for (let i = 0; i < data.length; i++) {
+    const slice = data[i]
+    const start = cum
+    cum += slice.value
+    const end = cum
+    slices.push({ ...slice, startAngle: (start / total) * 360, endAngle: (end / total) * 360 })
+  }
+
+  return (
+    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+      <Box>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          {slices.map((slice, i) => {
+            const path = describeSlicePath(cx, cy, radius, slice.startAngle, slice.endAngle)
+            const midAngle = (slice.startAngle + slice.endAngle) / 2
+            const labelPos = polarToCartesian(cx, cy, radius * 0.6, midAngle)
+            return (
+              <g key={slice.name}>
+                <path d={path} fill={slice.color || COLORS[i % COLORS.length]} stroke="#ffffff" strokeWidth="0.5" />
+              </g>
+            )
+          })}
+        </svg>
+      </Box>
+      <Box>
+        {slices.map((slice, i) => (
+          <Box key={slice.name} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <Box sx={{ width: 12, height: 12, backgroundColor: slice.color || COLORS[i % COLORS.length], borderRadius: '2px' }} />
+            <Typography variant="body2" sx={{ minWidth: 120 }}>{slice.name}</Typography>
+            <Typography variant="body2" fontWeight="bold">{currencySymbol}{slice.value.toFixed(2)}</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1 }}>({((slice.value / total) * 100).toFixed(1)}%)</Typography>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  )
+}
+
 function ReportsView() {
   const [db, setDb] = useState(null)
   const currentYear = new Date().getFullYear()
@@ -109,7 +193,9 @@ function ReportsView() {
 
     // Use static rates for consistent chart calculations
     const staticRates = { "USD": 1, "ILS": 3.67, "GBP": 0.79, "EURO": 0.95 };
-    const targetCurrency = selectedCurrency;
+    const targetCurrency = reportData && reportData.total && reportData.total.currency
+      ? reportData.total.currency
+      : selectedCurrency;
 
     const categoryTotals = {}
     reportData.costs.forEach((cost) => {
@@ -130,6 +216,12 @@ function ReportsView() {
       value: Number(categoryTotals[category].toFixed(2))
     }))
   }
+
+  const reportCurrency = reportData && reportData.total && reportData.total.currency
+    ? reportData.total.currency
+    : selectedCurrency;
+
+  const reportCurrencySymbol = CURRENCY_SYMBOLS[reportCurrency] || reportCurrency;
 
   return (
     <Box>
@@ -273,46 +365,12 @@ function ReportsView() {
                 Cost Distribution by Category
               </Typography>
               <Box sx={{ mt: 3 }}>
-                {getPieChartData().map((category, index) => {
-                  const total = reportData.total.total
-                  const percentage = (category.value / total) * 100
-                  return (
-                    <Box key={category.name} sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box
-                            sx={{
-                              width: 16,
-                              height: 16,
-                              borderRadius: '50%',
-                              backgroundColor: COLORS[index % COLORS.length]
-                            }}
-                          />
-                          <Typography variant="body2">{category.name}</Typography>
-                          <Typography variant="body2" fontWeight="bold" sx={{ ml: 1 }}>
-                            {percentage.toFixed(1)}%
-                          </Typography>
-                        </Box>
-                        <Typography variant="body2" fontWeight="bold">
-                          {category.value.toFixed(2)}
-                        </Typography>
-                      </Box>
-                      <LinearProgress
-                        variant="determinate"
-                        value={percentage}
-                        sx={{
-                          height: 8,
-                          borderRadius: 4,
-                          backgroundColor: 'grey.200',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: COLORS[index % COLORS.length],
-                            borderRadius: 4
-                          }
-                        }}
-                      />
-                    </Box>
-                  )
-                })}
+                {(() => {
+                  const pieData = getPieChartData()
+                  // attach colors for consistent legend/slices
+                  const pieWithColors = pieData.map((d, i) => ({ ...d, color: COLORS[i % COLORS.length] }))
+                  return <PieChart data={pieWithColors} size={220} currencySymbol={reportCurrencySymbol} />
+                })()}
               </Box>
             </Paper>
           </Grid>
@@ -336,7 +394,7 @@ function ReportsView() {
                           sx={{ minWidth: 50 }}
                         />
                         <Typography variant="body2" fontWeight="bold">
-                          {month.total.toFixed(2)} {selectedCurrency}
+                          {month.total.toFixed(2)} {reportCurrency}
                         </Typography>
                       </Box>
                       <LinearProgress
