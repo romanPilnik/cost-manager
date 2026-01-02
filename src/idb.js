@@ -75,11 +75,12 @@ getReport: async function(year, month, currency) {
         return d.getFullYear() === year && (d.getMonth() + 1) === month;
     });
 
-    // Calculate Total
+    // Calculate Total using static rates (not API rates)
+    const staticRates = { "USD": 1, "ILS": 3.67, "GBP": 0.79, "EURO": 0.95 };
     const totalSum = filtered.reduce((accumulator, item) => {
         // Safety check: if currency doesn't exist in rates, default to 1 to prevent NaN
-        const itemRate = rates[item.currency] || 1;
-        const targetRate = rates[currency] || 1;
+        const itemRate = staticRates[item.currency] || 1;
+        const targetRate = staticRates[currency] || 1;
         
         // Formula: (Amount / Original Rate) * Target Rate
         const amountInUSD = item.sum / itemRate;
@@ -93,15 +94,10 @@ getReport: async function(year, month, currency) {
         year: year,
         month: month,
         costs: filtered.map(c => {
-            // Convert each cost item to the target currency
-            const itemRate = rates[c.currency] || 1;
-            const targetRate = rates[currency] || 1;
-            const amountInUSD = c.sum / itemRate;
-            const convertedAmount = amountInUSD * targetRate;
-
+            // Keep original currency and sum for individual items
             return {
-                sum: Number(convertedAmount.toFixed(2)),
-                currency: currency,
+                sum: c.sum,
+                currency: c.currency,
                 category: c.category,
                 description: c.description,
                 Date: { day: new Date(c.date).getDate() }

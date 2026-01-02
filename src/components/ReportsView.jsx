@@ -107,12 +107,22 @@ function ReportsView() {
   const getPieChartData = () => {
     if (!reportData || !reportData.costs.length) return []
 
+    // Use static rates for consistent chart calculations
+    const staticRates = { "USD": 1, "ILS": 3.67, "GBP": 0.79, "EURO": 0.95 };
+    const targetCurrency = selectedCurrency;
+
     const categoryTotals = {}
     reportData.costs.forEach((cost) => {
+      // Convert each cost to target currency for chart calculations
+      const itemRate = staticRates[cost.currency] || 1;
+      const targetRate = staticRates[targetCurrency] || 1;
+      const amountInUSD = cost.sum / itemRate;
+      const convertedAmount = amountInUSD * targetRate;
+
       if (!categoryTotals[cost.category]) {
         categoryTotals[cost.category] = 0
       }
-      categoryTotals[cost.category] += cost.sum
+      categoryTotals[cost.category] += convertedAmount
     })
 
     return Object.keys(categoryTotals).map((category) => ({
@@ -279,9 +289,12 @@ function ReportsView() {
                             }}
                           />
                           <Typography variant="body2">{category.name}</Typography>
+                          <Typography variant="body2" fontWeight="bold" sx={{ ml: 1 }}>
+                            {percentage.toFixed(1)}%
+                          </Typography>
                         </Box>
                         <Typography variant="body2" fontWeight="bold">
-                          {category.value.toFixed(2)} ({percentage.toFixed(1)}%)
+                          {category.value.toFixed(2)}
                         </Typography>
                       </Box>
                       <LinearProgress
