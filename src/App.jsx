@@ -1,34 +1,68 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Container,
+  Box,
+  Tabs,
+  Tab,
+  ThemeProvider,
+  createTheme,
+  CssBaseline
+} from '@mui/material'
+import AddCostView from './components/AddCostView'
+import ReportsView from './components/ReportsView'
+import SettingsView from './components/SettingsView'
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+})
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [currentTab, setCurrentTab] = useState(0)
+
+  const handleTabChange = (_event, newValue) => {
+    setCurrentTab(newValue)
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Cost Manager
+            </Typography>
+          </Toolbar>
+          <Tabs
+            value={currentTab}
+            onChange={handleTabChange}
+            textColor="inherit"
+            indicatorColor="secondary"
+            centered
+          >
+            <Tab label="Add Cost" />
+            <Tab label="Reports & Charts" />
+            <Tab label="Settings" />
+          </Tabs>
+        </AppBar>
+
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          {currentTab === 0 && <AddCostView />}
+          {currentTab === 1 && <ReportsView />}
+          {currentTab === 2 && <SettingsView />}
+        </Container>
+      </Box>
+    </ThemeProvider>
   )
 }
 
