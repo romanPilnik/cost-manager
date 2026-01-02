@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import './ReportsView.css'
 import {
   Box,
   Typography,
@@ -38,7 +39,7 @@ const MONTHS = [
   { value: 12, label: 'December' }
 ]
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B9D']
+const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#c084fc', '#d8b4fe', '#e9d5ff', '#7c3aed', '#9333ea']
 
 const CURRENCY_SYMBOLS = { USD: '$', ILS: '₪', GBP: '£', EURO: '€' }
 
@@ -120,6 +121,39 @@ function PieChart({ data = [], size = 200, currencySymbol = '' }) {
           </Box>
         ))}
       </Box>
+    </Box>
+  )
+}
+
+function BarChart({ data = [], width = 480, height = 220, currencySymbol = '' }) {
+  const padding = { top: 20, right: 12, bottom: 36, left: 12 }
+  const innerWidth = Math.max(0, width - padding.left - padding.right)
+  const innerHeight = Math.max(0, height - padding.top - padding.bottom)
+  const maxValue = data.length ? Math.max(...data.map(d => d.total)) : 0
+  const barWidth = data.length ? innerWidth / data.length : 0
+
+  return (
+    <Box className="bar-chart">
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+        <g transform={`translate(${padding.left},${padding.top})`}>
+          {/* Bars */}
+          {data.map((d, i) => {
+            const h = maxValue > 0 ? (d.total / maxValue) * innerHeight : 0
+            const x = i * barWidth + barWidth * 0.15
+            const bw = Math.max(4, barWidth * 0.7)
+            const y = innerHeight - h
+            return (
+              <g key={d.month}>
+                <rect x={x} y={y} width={bw} height={h} rx={4} ry={4} fill="#6366f1" />
+                <text x={x + bw / 2} y={y - 6} textAnchor="middle" fontSize={11} fill="#111">{currencySymbol}{d.total.toFixed(0)}</text>
+                <text x={x + bw / 2} y={innerHeight + 14} textAnchor="middle" fontSize={12} fill="#333">{d.month}</text>
+              </g>
+            )
+          })}
+          {/* baseline */}
+          <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke="#e0e0e0" />
+        </g>
+      </svg>
     </Box>
   )
 }
@@ -224,7 +258,7 @@ function ReportsView() {
   const reportCurrencySymbol = CURRENCY_SYMBOLS[reportCurrency] || reportCurrency;
 
   return (
-    <Box>
+    <Box className="reports-view">
       <Typography variant="h4" gutterBottom>
         Reports & Charts
       </Typography>
@@ -357,10 +391,10 @@ function ReportsView() {
 
       {/* Charts */}
       {reportData && reportData.costs.length > 0 && (
-        <Grid container spacing={3} sx={{ mt: 1 }}>
+          <Grid container spacing={3} className="charts-grid" sx={{ mt: 1 }}>
           {/* Category Distribution */}
           <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 3 }}>
+            <Paper elevation={3} className="chart-paper" sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Cost Distribution by Category
               </Typography>
@@ -377,42 +411,12 @@ function ReportsView() {
 
           {/* Yearly Trend */}
           <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 3 }}>
+            <Paper elevation={3} className="chart-paper" sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Monthly Trend for {selectedYear}
               </Typography>
               <Box sx={{ mt: 3 }}>
-                {yearlyData.map((month) => {
-                  const maxValue = Math.max(...yearlyData.map(m => m.total))
-                  const percentage = maxValue > 0 ? (month.total / maxValue) * 100 : 0
-                  return (
-                    <Box key={month.month} sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Chip
-                          label={month.month}
-                          size="small"
-                          sx={{ minWidth: 50 }}
-                        />
-                        <Typography variant="body2" fontWeight="bold">
-                          {month.total.toFixed(2)} {reportCurrency}
-                        </Typography>
-                      </Box>
-                      <LinearProgress
-                        variant="determinate"
-                        value={percentage}
-                        sx={{
-                          height: 10,
-                          borderRadius: 5,
-                          backgroundColor: 'grey.200',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: '#1976d2',
-                            borderRadius: 5
-                          }
-                        }}
-                      />
-                    </Box>
-                  )
-                })}
+                <BarChart data={yearlyData} width={520} height={260} currencySymbol={reportCurrencySymbol} />
               </Box>
             </Paper>
           </Grid>

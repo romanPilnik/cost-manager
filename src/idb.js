@@ -35,6 +35,19 @@ const idb = {
                     transaction.oncomplete = () => resolve(costToSave);
                 });
             },
+            // Adds a new cost item but uses the provided `date` if present.
+            // This is intended for testing and seeding purposes so tests can
+            // insert items with historic dates (different months/years).
+            addCostWithDate: (cost) => {
+                return new Promise((resolve) => {
+                    const transaction = db.transaction(['costs'], 'readwrite');
+                    const store = transaction.objectStore('costs');
+                    // If `cost.date` is provided, keep it; otherwise attach current date.
+                    const costToSave = { ...cost, date: cost.date ? new Date(cost.date) : new Date() };
+                    store.add(costToSave);
+                    transaction.oncomplete = () => resolve(costToSave);
+                });
+            },
             // Generates a report filtered by month and year.
             // This method generates a detailed report and calculates the total in a selected currency.
 getReport: async function(year, month, currency) {

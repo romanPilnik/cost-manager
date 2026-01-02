@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import './AddCostView.css'
 import {
   Box,
   Typography,
@@ -145,12 +146,12 @@ function AddCostView() {
   }
 
   return (
-    <Box>
+    <Box className="add-cost-view">
       <Typography variant="h4" gutterBottom>
         Add New Cost
       </Typography>
 
-      <Paper elevation={3} sx={{ p: 4, mt: 3, maxWidth: 600 }}>
+      <Paper elevation={3} className="add-cost-paper">
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
@@ -221,6 +222,7 @@ function AddCostView() {
             color="primary"
             size="large"
             fullWidth
+            className="add-cost-button"
           >
             Add Cost
           </Button>
