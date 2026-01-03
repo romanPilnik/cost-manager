@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import './SettingsView.css'
 import {
   Box,
   Typography,
@@ -65,12 +66,12 @@ function SettingsView() {
   }
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
+    <Box className="settings-view">
+      <Typography variant="h4" gutterBottom className="settings-header">
         Settings
       </Typography>
 
-      <Paper elevation={3} sx={{ p: 4, mt: 3, maxWidth: 800 }}>
+      <Paper elevation={3} className="settings-panel">
         <Typography variant="h6" gutterBottom>
           Exchange Rate API Configuration
         </Typography>
@@ -89,12 +90,13 @@ function SettingsView() {
           sx={{ mb: 3 }}
         />
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box className="settings-button-group">
           <Button
             variant="contained"
             color="primary"
             onClick={handleSave}
             size="large"
+            className="settings-save-button"
           >
             Save Settings
           </Button>
@@ -104,12 +106,13 @@ function SettingsView() {
             color="secondary"
             onClick={handleReset}
             size="large"
+            className="settings-reset-button"
           >
             Reset to Default
           </Button>
         </Box>
 
-        <Box sx={{ mt: 4, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+        <Box className="settings-info-box">
           <Typography variant="subtitle2" gutterBottom>
             Default API URL:
           </Typography>

@@ -1,0 +1,257 @@
+/* SettingsView.css - Consistent with dark glassmorphism theme */
+
+/* Fade-in animation for the view */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Main container */
+.settings-view {
+  padding: 16px;
+  animation: fadeIn 400ms ease-in-out;
+}
+
+/* Page header with gradient text effect */
+.settings-header {
+  background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 4px rgba(129, 140, 248, 0.3));
+  margin-bottom: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Settings panel with glassmorphism effect */
+.settings-panel {
+  background: rgba(30, 41, 59, 0.6) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15) !important;
+  padding: 32px !important;
+  max-width: 800px;
+  margin-top: 24px !important;
+}
+
+/* Section header styling */
+.settings-panel .MuiTypography-h6 {
+  color: #a5b4fc;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* Description text */
+.settings-panel .MuiTypography-body2 {
+  color: rgba(248, 250, 252, 0.7);
+}
+
+/* TextField input styling */
+.settings-view .MuiOutlinedInput-root {
+  background-color: rgba(15, 23, 42, 0.3);
+  border-radius: 12px;
+  transition: all 300ms ease-in-out;
+}
+
+.settings-view .MuiOutlinedInput-root:hover {
+  background-color: rgba(15, 23, 42, 0.5);
+  transform: translateY(-1px);
+}
+
+.settings-view .MuiOutlinedInput-root.Mui-focused {
+  background-color: rgba(15, 23, 42, 0.6);
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.25);
+}
+
+.settings-view .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.settings-view .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(129, 140, 248, 0.3);
+}
+
+.settings-view .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #818cf8;
+}
+
+/* TextField label colors */
+.settings-view .MuiInputLabel-root {
+  color: #a5b4fc;
+}
+
+.settings-view .MuiInputLabel-root.Mui-focused {
+  color: #818cf8;
+}
+
+.settings-view .MuiFormHelperText-root {
+  color: rgba(165, 180, 252, 0.7);
+}
+
+/* Input text color */
+.settings-view .MuiOutlinedInput-input {
+  color: #f8fafc;
+}
+
+/* Button group container */
+.settings-button-group {
+  display: flex;
+  gap: 16px;
+}
+
+/* Save button with gradient */
+.settings-save-button {
+  background: linear-gradient(135deg, #6366f1, #7c3aed) !important;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3) !important;
+  transition: all 300ms ease-in-out !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+}
+
+.settings-save-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45) !important;
+  background: linear-gradient(135deg, #4f46e5, #6d28d9) !important;
+}
+
+.settings-save-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Reset button with outline */
+.settings-reset-button {
+  border: 2px solid rgba(192, 132, 252, 0.5) !important;
+  color: #c084fc !important;
+  background-color: transparent !important;
+  transition: all 300ms ease-in-out !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+}
+
+.settings-reset-button:hover {
+  border-color: #c084fc !important;
+  background-color: rgba(192, 132, 252, 0.1) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(192, 132, 252, 0.3);
+}
+
+.settings-reset-button:active {
+  transform: translateY(0);
+}
+
+/* Info box for default URL display */
+.settings-info-box {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  margin-top: 32px !important;
+}
+
+.settings-info-box .MuiTypography-subtitle2 {
+  color: #a5b4fc;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.settings-info-box .MuiTypography-body2 {
+  color: #818cf8;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+/* Snackbar Alert styling for dark theme */
+.settings-view .MuiAlert-standardSuccess {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+}
+
+.settings-view .MuiAlert-standardSuccess .MuiAlert-icon {
+  color: #86efac;
+}
+
+.settings-view .MuiAlert-standardError {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5 !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+}
+
+.settings-view .MuiAlert-standardError .MuiAlert-icon {
+  color: #fca5a5;
+}
+
+.settings-view .MuiAlert-standardInfo {
+  background-color: rgba(129, 140, 248, 0.15) !important;
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  color: #a5b4fc !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+}
+
+.settings-view .MuiAlert-standardInfo .MuiAlert-icon {
+  color: #a5b4fc;
+}
+
+/* Close button for alerts */
+.settings-view .MuiAlert-action .MuiIconButton-root {
+  color: inherit;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 600px) {
+  .settings-view {
+    padding: 12px;
+  }
+
+  .settings-panel {
+    padding: 20px !important;
+    margin-top: 16px !important;
+  }
+
+  .settings-header {
+    font-size: 1.75rem;
+    margin-bottom: 20px;
+  }
+
+  .settings-button-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .settings-save-button,
+  .settings-reset-button {
+    width: 100%;
+    padding: 10px 20px !important;
+  }
+
+  .settings-info-box {
+    margin-top: 24px !important;
+    padding: 12px !important;
+  }
+
+  .settings-info-box .MuiTypography-body2 {
+    font-size: 0.8rem;
+  }
+}
