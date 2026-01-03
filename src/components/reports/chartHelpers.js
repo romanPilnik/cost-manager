@@ -8,6 +8,11 @@ export function polarToCartesian(cx, cy, radius, angleInDegrees) {
 }
 
 export function describeSlicePath(cx, cy, radius, startAngle, endAngle) {
+  // Handle full circle case (when there's only one category)
+  if (endAngle - startAngle >= 360) {
+    return `M ${cx} ${cy} m -${radius}, 0 a ${radius},${radius} 0 1,0 ${radius * 2},0 a ${radius},${radius} 0 1,0 -${radius * 2},0`
+  }
+
   const start = polarToCartesian(cx, cy, radius, endAngle)
   const end = polarToCartesian(cx, cy, radius, startAngle)
   const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
