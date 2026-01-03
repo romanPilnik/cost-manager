@@ -39,7 +39,7 @@ const MONTHS = [
   { value: 12, label: 'December' }
 ]
 
-const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#c084fc', '#d8b4fe', '#e9d5ff', '#7c3aed', '#9333ea']
+const COLORS = ['#60a5fa', '#34d399', '#f472b6', '#fbbf24', '#a78bfa', '#f87171', '#22d3ee', '#c084fc']
 
 const CURRENCY_SYMBOLS = { USD: '$', ILS: '₪', GBP: '£', EURO: '€' }
 
@@ -67,9 +67,9 @@ function PieChart({ data = [], size = 200, currencySymbol = '' }) {
   // Precompute slice start/end angles to avoid mutating during render
   if (total === 0) {
     return (
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          <circle cx={cx} cy={cy} r={radius} fill="#f5f5f5" stroke="#e0e0e0" />
+          <circle cx={cx} cy={cy} r={radius} fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" />
         </svg>
         <Box>
           {data.map((slice, i) => (
@@ -96,7 +96,7 @@ function PieChart({ data = [], size = 200, currencySymbol = '' }) {
   }
 
   return (
-    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
       <Box>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {slices.map((slice, i) => {
@@ -105,7 +105,7 @@ function PieChart({ data = [], size = 200, currencySymbol = '' }) {
             const labelPos = polarToCartesian(cx, cy, radius * 0.6, midAngle)
             return (
               <g key={slice.name}>
-                <path d={path} fill={slice.color || COLORS[i % COLORS.length]} stroke="#ffffff" strokeWidth="0.5" />
+                <path d={path} fill={slice.color || COLORS[i % COLORS.length]} stroke="rgba(15, 23, 42, 0.8)" strokeWidth="2" />
               </g>
             )
           })}
@@ -133,8 +133,8 @@ function BarChart({ data = [], width = 480, height = 220, currencySymbol = '' })
   const barWidth = data.length ? innerWidth / data.length : 0
 
   return (
-    <Box className="bar-chart">
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+    <Box className="bar-chart" sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+      <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', maxHeight: '400px' }}>
         <g transform={`translate(${padding.left},${padding.top})`}>
           {/* Bars */}
           {data.map((d, i) => {
@@ -145,13 +145,13 @@ function BarChart({ data = [], width = 480, height = 220, currencySymbol = '' })
             return (
               <g key={d.month}>
                 <rect x={x} y={y} width={bw} height={h} rx={4} ry={4} fill="#6366f1" />
-                <text x={x + bw / 2} y={y - 6} textAnchor="middle" fontSize={11} fill="#111">{currencySymbol}{d.total.toFixed(0)}</text>
-                <text x={x + bw / 2} y={innerHeight + 14} textAnchor="middle" fontSize={12} fill="#333">{d.month}</text>
+                <text x={x + bw / 2} y={y - 6} textAnchor="middle" fontSize={11} fill="#e2e8f0">{currencySymbol}{d.total.toFixed(0)}</text>
+                <text x={x + bw / 2} y={innerHeight + 14} textAnchor="middle" fontSize={12} fill="#94a3b8">{d.month}</text>
               </g>
             )
           })}
           {/* baseline */}
-          <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke="#e0e0e0" />
+          <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke="rgba(255,255,255,0.1)" />
         </g>
       </svg>
     </Box>
@@ -259,14 +259,14 @@ function ReportsView() {
 
   return (
     <Box className="reports-view">
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom className="page-header">
         Reports & Charts
       </Typography>
 
       {/* Filters */}
       <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={4}>
+        <Grid container spacing={2} alignItems="center" justifyContent="center">
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>Year</InputLabel>
               <Select
@@ -283,7 +283,7 @@ function ReportsView() {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>Month</InputLabel>
               <Select
@@ -300,7 +300,7 @@ function ReportsView() {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>Currency</InputLabel>
               <Select
@@ -317,13 +317,14 @@ function ReportsView() {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={6} md={3}>
             <Button
               variant="contained"
               color="primary"
               size="large"
               fullWidth
               onClick={handleGenerateReport}
+              sx={{ height: '56px' }}
               disabled={loading}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Generate Report'}
@@ -391,36 +392,32 @@ function ReportsView() {
 
       {/* Charts */}
       {reportData && reportData.costs.length > 0 && (
-          <Grid container spacing={3} className="charts-grid" sx={{ mt: 1 }}>
+        <Box sx={{ mt: 4 }}>
           {/* Category Distribution */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} className="chart-paper" sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Cost Distribution by Category
-              </Typography>
-              <Box sx={{ mt: 3 }}>
-                {(() => {
-                  const pieData = getPieChartData()
-                  // attach colors for consistent legend/slices
-                  const pieWithColors = pieData.map((d, i) => ({ ...d, color: COLORS[i % COLORS.length] }))
-                  return <PieChart data={pieWithColors} size={220} currencySymbol={reportCurrencySymbol} />
-                })()}
-              </Box>
-            </Paper>
-          </Grid>
+          <Paper elevation={3} className="chart-paper" sx={{ p: 3, mb: 4, display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" gutterBottom>
+              Cost Distribution by Category
+            </Typography>
+            <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {(() => {
+                const pieData = getPieChartData()
+                // attach colors for consistent legend/slices
+                const pieWithColors = pieData.map((d, i) => ({ ...d, color: COLORS[i % COLORS.length] }))
+                return <PieChart data={pieWithColors} size={260} currencySymbol={reportCurrencySymbol} />
+              })()}
+            </Box>
+          </Paper>
 
           {/* Yearly Trend */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} className="chart-paper" sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Monthly Trend for {selectedYear}
-              </Typography>
-              <Box sx={{ mt: 3 }}>
-                <BarChart data={yearlyData} width={520} height={260} currencySymbol={reportCurrencySymbol} />
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
+          <Paper elevation={3} className="chart-paper" sx={{ p: 3, display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" gutterBottom>
+              Monthly Trend for {selectedYear}
+            </Typography>
+            <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BarChart data={yearlyData} width={800} height={350} currencySymbol={reportCurrencySymbol} />
+            </Box>
+          </Paper>
+        </Box>
       )}
     </Box>
   )

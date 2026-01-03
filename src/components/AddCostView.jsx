@@ -147,7 +147,7 @@ function AddCostView() {
 
   return (
     <Box className="add-cost-view">
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom className="page-header">
         Add New Cost
       </Typography>
 

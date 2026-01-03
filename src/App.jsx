@@ -18,19 +18,33 @@ import './App.css'
 
 const theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      main: '#6366f1',
-      light: '#818cf8',
-      dark: '#4f46e5',
+      main: '#818cf8', // Indigo 400
+      light: '#a5b4fc',
+      dark: '#6366f1',
     },
     secondary: {
-      main: '#8b5cf6',
-      light: '#a855f7',
-      dark: '#7c3aed',
+      main: '#c084fc', // Violet 400
+      light: '#d8b4fe',
+      dark: '#a855f7',
+    },
+    background: {
+      default: '#0f172a',
+      paper: 'rgba(30, 41, 59, 0.7)', // Glassy Slate
+    },
+    text: {
+      primary: '#f1f5f9',
+      secondary: '#94a3b8',
     },
   },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h4: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h6: { fontWeight: 600, letterSpacing: '-0.01em' },
+  },
   shape: {
-    borderRadius: 12,
+    borderRadius: 16,
   },
   shadows: [
     'none',
@@ -51,6 +65,7 @@ const theme = createTheme({
           textTransform: 'none',
           fontWeight: 500,
           transition: 'all 300ms ease-in-out',
+          borderRadius: '10px',
           '&:hover': {
             transform: 'translateY(-2px)',
           },
@@ -66,7 +81,7 @@ const theme = createTheme({
               transform: 'translateY(-1px)',
             },
             '&.Mui-focused': {
-              boxShadow: '0 0 0 3px rgba(99, 102, 241, 0.2)',
+              boxShadow: '0 0 0 2px rgba(129, 140, 248, 0.2)',
             },
           },
         },
@@ -75,6 +90,9 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
+          backgroundImage: 'none',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
           transition: 'all 300ms ease-in-out',
         },
       },
@@ -93,9 +111,9 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static" className="gradient-appbar">
+        <AppBar position="static" color="transparent" elevation={0} className="gradient-appbar">
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+            <Typography variant="h5" component="div" className="app-logo-text" sx={{ flexGrow: 1, fontWeight: 700 }}>
               Cost Manager
             </Typography>
           </Toolbar>
