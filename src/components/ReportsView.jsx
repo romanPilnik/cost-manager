@@ -47,7 +47,7 @@ function ReportsView() {
       try {
         const response = await fetch(ratesUrl)
         const data = await response.json()
-        setRates(data.rates || {})
+        setRates(data || {})
       } catch (error) {
         console.error('Failed to fetch rates:', error)
         setError('Failed to fetch currency rates')
