@@ -16,6 +16,7 @@ import ReportsView from './components/ReportsView'
 import SettingsView from './components/SettingsView'
 import './App.css'
 
+// Define the custom theme for the application
 const theme = createTheme({
   palette: {
     mode: 'dark',
@@ -103,6 +104,7 @@ const theme = createTheme({
 function App() {
   const [currentTab, setCurrentTab] = useState(0)
 
+  // Handle tab change event
   const handleTabChange = (_event, newValue) => {
     setCurrentTab(newValue)
   }

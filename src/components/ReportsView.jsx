@@ -3,160 +3,14 @@ import './ReportsView.css'
 import {
   Box,
   Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  CircularProgress,
   Alert,
-  Divider,
-  LinearProgress,
-  Chip,
-  Grid
 } from '@mui/material'
-
-const CURRENCIES = ['USD', 'ILS', 'GBP', 'EURO']
-const MONTHS = [
-  { value: 1, label: 'January' },
-  { value: 2, label: 'February' },
-  { value: 3, label: 'March' },
-  { value: 4, label: 'April' },
-  { value: 5, label: 'May' },
-  { value: 6, label: 'June' },
-  { value: 7, label: 'July' },
-  { value: 8, label: 'August' },
-  { value: 9, label: 'September' },
-  { value: 10, label: 'October' },
-  { value: 11, label: 'November' },
-  { value: 12, label: 'December' }
-]
-
-const COLORS = ['#60a5fa', '#34d399', '#f472b6', '#fbbf24', '#a78bfa', '#f87171', '#22d3ee', '#c084fc']
-
-const CURRENCY_SYMBOLS = { USD: '$', ILS: '₪', GBP: '£', EURO: '€' }
-
-// Helpers to draw pie chart slices as SVG paths
-function polarToCartesian(cx, cy, radius, angleInDegrees) {
-  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0
-  return {
-    x: cx + radius * Math.cos(angleInRadians),
-    y: cy + radius * Math.sin(angleInRadians)
-  }
-}
-
-function describeSlicePath(cx, cy, radius, startAngle, endAngle) {
-  const start = polarToCartesian(cx, cy, radius, endAngle)
-  const end = polarToCartesian(cx, cy, radius, startAngle)
-  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
-  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`
-}
-
-function PieChart({ data = [], size = 200, currencySymbol = '' }) {
-  const cx = size / 2
-  const cy = size / 2
-  const radius = Math.min(cx, cy)
-  const total = data.reduce((s, d) => s + d.value, 0)
-  // Precompute slice start/end angles to avoid mutating during render
-  if (total === 0) {
-    return (
-      <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          <circle cx={cx} cy={cy} r={radius} fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" />
-        </svg>
-        <Box>
-          {data.map((slice, i) => (
-            <Box key={slice.name} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Box sx={{ width: 12, height: 12, backgroundColor: slice.color || COLORS[i % COLORS.length], borderRadius: '2px' }} />
-              <Typography variant="body2" sx={{ minWidth: 120 }}>{slice.name}</Typography>
-              <Typography variant="body2" fontWeight="bold">{currencySymbol}{slice.value.toFixed(2)}</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1 }}>(0%)</Typography>
-            </Box>
-          ))}
-        </Box>
-      </Box>
-    )
-  }
-
-  const slices = []
-  let cum = 0
-  for (let i = 0; i < data.length; i++) {
-    const slice = data[i]
-    const start = cum
-    cum += slice.value
-    const end = cum
-    slices.push({ ...slice, startAngle: (start / total) * 360, endAngle: (end / total) * 360 })
-  }
-
-  return (
-    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
-      <Box>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          {slices.map((slice, i) => {
-            const path = describeSlicePath(cx, cy, radius, slice.startAngle, slice.endAngle)
-            const midAngle = (slice.startAngle + slice.endAngle) / 2
-            const labelPos = polarToCartesian(cx, cy, radius * 0.6, midAngle)
-            return (
-              <g key={slice.name}>
-                <path d={path} fill={slice.color || COLORS[i % COLORS.length]} stroke="rgba(15, 23, 42, 0.8)" strokeWidth="2" />
-              </g>
-            )
-          })}
-        </svg>
-      </Box>
-      <Box>
-        {slices.map((slice, i) => (
-          <Box key={slice.name} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Box sx={{ width: 12, height: 12, backgroundColor: slice.color || COLORS[i % COLORS.length], borderRadius: '2px' }} />
-            <Typography variant="body2" sx={{ minWidth: 120 }}>{slice.name}</Typography>
-            <Typography variant="body2" fontWeight="bold">{currencySymbol}{slice.value.toFixed(2)}</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1 }}>({((slice.value / total) * 100).toFixed(1)}%)</Typography>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  )
-}
-
-function BarChart({ data = [], width = 480, height = 220, currencySymbol = '' }) {
-  const padding = { top: 20, right: 12, bottom: 36, left: 12 }
-  const innerWidth = Math.max(0, width - padding.left - padding.right)
-  const innerHeight = Math.max(0, height - padding.top - padding.bottom)
-  const maxValue = data.length ? Math.max(...data.map(d => d.total)) : 0
-  const barWidth = data.length ? innerWidth / data.length : 0
-
-  return (
-    <Box className="bar-chart" sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-      <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', maxHeight: '400px' }}>
-        <g transform={`translate(${padding.left},${padding.top})`}>
-          {/* Bars */}
-          {data.map((d, i) => {
-            const h = maxValue > 0 ? (d.total / maxValue) * innerHeight : 0
-            const x = i * barWidth + barWidth * 0.15
-            const bw = Math.max(4, barWidth * 0.7)
-            const y = innerHeight - h
-            return (
-              <g key={d.month}>
-                <rect x={x} y={y} width={bw} height={h} rx={4} ry={4} fill="#6366f1" />
-                <text x={x + bw / 2} y={y - 6} textAnchor="middle" fontSize={11} fill="#e2e8f0">{currencySymbol}{d.total.toFixed(0)}</text>
-                <text x={x + bw / 2} y={innerHeight + 14} textAnchor="middle" fontSize={12} fill="#94a3b8">{d.month}</text>
-              </g>
-            )
-          })}
-          {/* baseline */}
-          <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke="rgba(255,255,255,0.1)" />
-        </g>
-      </svg>
-    </Box>
-  )
-}
+import ReportFilters from './reports/ReportFilters'
+import ReportTable from './reports/ReportTable'
+import PieChart from './reports/PieChart'
+import BarChart from './reports/BarChart'
+import { MONTHS, COLORS, CURRENCY_SYMBOLS } from './reports/constants'
 
 function ReportsView() {
   const [db, setDb] = useState(null)
@@ -170,9 +24,7 @@ function ReportsView() {
   const [yearlyData, setYearlyData] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-
-  // Generate year options (current year and 5 years back)
-  const years = Array.from({ length: 6 }, (_, i) => currentYear - i)
+  const [rates, setRates] = useState({})
 
   // Initialize IndexedDB on component mount
   useEffect(() => {
@@ -186,6 +38,22 @@ function ReportsView() {
       }
     }
     initDB()
+  }, [])
+
+  // Fetch currency rates on component mount
+  useEffect(() => {
+    const fetchRates = async () => {
+      const ratesUrl = localStorage.getItem('exchangeRatesUrl') || 'https://currency-rates-api-gdwf.onrender.com/rates.json'
+      try {
+        const response = await fetch(ratesUrl)
+        const data = await response.json()
+        setRates(data.rates || {})
+      } catch (error) {
+        console.error('Failed to fetch rates:', error)
+        setError('Failed to fetch currency rates')
+      }
+    }
+    fetchRates()
   }, [])
 
   const handleGenerateReport = async () => {
@@ -223,10 +91,8 @@ function ReportsView() {
 
   // Generate pie chart data from report
   const getPieChartData = () => {
-    if (!reportData || !reportData.costs.length) return []
+    if (!reportData || !reportData.costs.length || !rates) return []
 
-    // Use static rates for consistent chart calculations
-    const staticRates = { "USD": 1, "ILS": 3.67, "GBP": 0.79, "EURO": 0.95 };
     const targetCurrency = reportData && reportData.total && reportData.total.currency
       ? reportData.total.currency
       : selectedCurrency;
@@ -234,8 +100,8 @@ function ReportsView() {
     const categoryTotals = {}
     reportData.costs.forEach((cost) => {
       // Convert each cost to target currency for chart calculations
-      const itemRate = staticRates[cost.currency] || 1;
-      const targetRate = staticRates[targetCurrency] || 1;
+      const itemRate = rates[cost.currency] || 1;
+      const targetRate = rates[targetCurrency] || 1;
       const amountInUSD = cost.sum / itemRate;
       const convertedAmount = amountInUSD * targetRate;
 
@@ -263,137 +129,36 @@ function ReportsView() {
         Reports & Charts
       </Typography>
 
-      {/* Filters */}
-      <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-        <Grid container spacing={2} alignItems="center" justifyContent="center">
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Year</InputLabel>
-              <Select
-                value={selectedYear}
-                label="Year"
-                onChange={(e) => setSelectedYear(e.target.value)}
-              >
-                {years.map((year) => (
-                  <MenuItem key={year} value={year}>
-                    {year}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+      {/* Filters for selecting year, month, and currency */}
+      <ReportFilters
+        selectedYear={selectedYear}
+        selectedMonth={selectedMonth}
+        selectedCurrency={selectedCurrency}
+        onYearChange={setSelectedYear}
+        onMonthChange={setSelectedMonth}
+        onCurrencyChange={setSelectedCurrency}
+        onGenerateReport={handleGenerateReport}
+        loading={loading}
+      />
 
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Month</InputLabel>
-              <Select
-                value={selectedMonth}
-                label="Month"
-                onChange={(e) => setSelectedMonth(e.target.value)}
-              >
-                {MONTHS.map((month) => (
-                  <MenuItem key={month.value} value={month.value}>
-                    {month.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Currency</InputLabel>
-              <Select
-                value={selectedCurrency}
-                label="Currency"
-                onChange={(e) => setSelectedCurrency(e.target.value)}
-              >
-                {CURRENCIES.map((currency) => (
-                  <MenuItem key={currency} value={currency}>
-                    {currency}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              onClick={handleGenerateReport}
-              sx={{ height: '56px' }}
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Generate Report'}
-            </Button>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Error Message */}
+      {/* Error alert if any */}
       {error && (
         <Alert severity="error" sx={{ mt: 3 }}>
           {error}
         </Alert>
       )}
 
-      {/* Report Table */}
-      {reportData && (
-        <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-          <Typography variant="h5" gutterBottom>
-            Monthly Report - {MONTHS.find((m) => m.value === selectedMonth)?.label} {selectedYear}
-          </Typography>
+      {/* Report table */}
+      <ReportTable
+        reportData={reportData}
+        selectedYear={selectedYear}
+        selectedMonth={selectedMonth}
+      />
 
-          {reportData.costs.length > 0 ? (
-            <>
-              <TableContainer sx={{ mt: 2 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell><strong>Day</strong></TableCell>
-                      <TableCell><strong>Category</strong></TableCell>
-                      <TableCell><strong>Description</strong></TableCell>
-                      <TableCell align="right"><strong>Amount</strong></TableCell>
-                      <TableCell align="right"><strong>Currency</strong></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {reportData.costs.map((cost, index) => (
-                      <TableRow key={index} hover>
-                        <TableCell>{cost.Date.day}</TableCell>
-                        <TableCell>{cost.category}</TableCell>
-                        <TableCell>{cost.description}</TableCell>
-                        <TableCell align="right">{cost.sum.toFixed(2)}</TableCell>
-                        <TableCell align="right">{cost.currency}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              <Divider sx={{ my: 3 }} />
-
-              <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="h6" color="primary">
-                  Total: {reportData.total.total.toFixed(2)} {reportData.total.currency}
-                </Typography>
-              </Box>
-            </>
-          ) : (
-            <Alert severity="info" sx={{ mt: 2 }}>
-              No costs found for this month.
-            </Alert>
-          )}
-        </Paper>
-      )}
-
-      {/* Charts */}
+      {/* Charts section */}
       {reportData && reportData.costs.length > 0 && (
         <Box sx={{ mt: 4 }}>
-          {/* Category Distribution */}
+          {/* Pie chart for category distribution */}
           <Paper elevation={3} className="chart-paper" sx={{ p: 3, mb: 4, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" gutterBottom>
               Cost Distribution by Category
@@ -401,14 +166,13 @@ function ReportsView() {
             <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {(() => {
                 const pieData = getPieChartData()
-                // attach colors for consistent legend/slices
                 const pieWithColors = pieData.map((d, i) => ({ ...d, color: COLORS[i % COLORS.length] }))
                 return <PieChart data={pieWithColors} size={260} currencySymbol={reportCurrencySymbol} />
               })()}
             </Box>
           </Paper>
 
-          {/* Yearly Trend */}
+          {/* Bar chart for monthly trend */}
           <Paper elevation={3} className="chart-paper" sx={{ p: 3, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" gutterBottom>
               Monthly Trend for {selectedYear}

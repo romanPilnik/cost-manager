@@ -53,8 +53,8 @@ const idb = {
 getReport: async function(year, month, currency) {
     // 1. FETCH RATES FIRST
     // We handle the network request before touching the database.
-    const ratesUrl = localStorage.getItem('exchangeRatesUrl') || 'https://api.exchangerate-api.com/v4/latest/USD';
-    let rates = { "USD": 1, "ILS": 3.67, "GBP": 0.79, "EURO": 0.95 }; // Default fallback
+    const ratesUrl = localStorage.getItem('exchangeRatesUrl') || 'https://currency-rates-api-gdwf.onrender.com/rates.json';
+    let rates = {}; // No static fallback rates
 
     try {
         const response = await fetch(ratesUrl);
@@ -62,7 +62,7 @@ getReport: async function(year, month, currency) {
         // Extract the rates object from the API response
         rates = data.rates || rates;
     } catch (error) {
-        console.error("Currency fetch failed, using fallback:", error);
+        console.error("Currency fetch failed, no rates available:", error);
     }
 
     // 2. QUERY DATABASE
@@ -88,12 +88,11 @@ getReport: async function(year, month, currency) {
         return d.getFullYear() === year && (d.getMonth() + 1) === month;
     });
 
-    // Calculate Total using static rates (not API rates)
-    const staticRates = { "USD": 1, "ILS": 3.67, "GBP": 0.79, "EURO": 0.95 };
+    // Calculate Total using fetched rates
     const totalSum = filtered.reduce((accumulator, item) => {
         // Safety check: if currency doesn't exist in rates, default to 1 to prevent NaN
-        const itemRate = staticRates[item.currency] || 1;
-        const targetRate = staticRates[currency] || 1;
+        const itemRate = rates[item.currency] || 1;
+        const targetRate = rates[currency] || 1;
         
         // Formula: (Amount / Original Rate) * Target Rate
         const amountInUSD = item.sum / itemRate;

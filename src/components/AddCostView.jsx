@@ -109,6 +109,7 @@ function AddCostView() {
     }
 
     try {
+      // Prepare cost data for saving
       const costData = {
         sum: parseFloat(formData.sum),
         currency: formData.currency,
@@ -124,7 +125,7 @@ function AddCostView() {
         severity: 'success'
       })
 
-      // Reset form
+      // Reset form after successful submission
       setFormData({
         sum: '',
         currency: 'USD',
@@ -153,6 +154,7 @@ function AddCostView() {
 
       <Paper elevation={3} className="add-cost-paper">
         <form onSubmit={handleSubmit}>
+          {/* Amount input field */}
           <TextField
             fullWidth
             label="Amount"
@@ -166,6 +168,7 @@ function AddCostView() {
             required
           />
 
+          {/* Currency selection */}
           <FormControl fullWidth sx={{ mb: 3 }} error={!!errors.currency}>
             <InputLabel>Currency</InputLabel>
             <Select
@@ -182,6 +185,7 @@ function AddCostView() {
             </Select>
           </FormControl>
 
+          {/* Category selection */}
           <FormControl fullWidth sx={{ mb: 3 }} error={!!errors.category}>
             <InputLabel>Category</InputLabel>
             <Select
@@ -203,6 +207,7 @@ function AddCostView() {
             )}
           </FormControl>
 
+          {/* Description input */}
           <TextField
             fullWidth
             label="Description"
@@ -216,6 +221,7 @@ function AddCostView() {
             required
           />
 
+          {/* Submit button */}
           <Button
             type="submit"
             variant="contained"
@@ -229,6 +235,7 @@ function AddCostView() {
         </form>
       </Paper>
 
+      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

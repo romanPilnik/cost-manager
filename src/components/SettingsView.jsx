@@ -9,19 +9,24 @@ import {
   Snackbar
 } from '@mui/material'
 
-const DEFAULT_API_URL = 'https://api.exchangerate-api.com/v4/latest/USD'
+// Default API URL for exchange rates
+const DEFAULT_API_URL = 'https://currency-rates-api-gdwf.onrender.com/rates.json'
 
 function SettingsView() {
+  // Initialize API URL from localStorage or default
   const [apiUrl, setApiUrl] = useState(() => {
     const savedUrl = localStorage.getItem('exchangeRatesUrl')
     return savedUrl || DEFAULT_API_URL
   })
+  // State for snackbar notifications
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' })
 
+  // Handle input change for API URL
   const handleChange = (event) => {
     setApiUrl(event.target.value)
   }
 
+  // Save the API URL to localStorage
   const handleSave = () => {
     try {
       // Save to localStorage
@@ -42,6 +47,7 @@ function SettingsView() {
     }
   }
 
+  // Reset to default API URL
   const handleReset = () => {
     setApiUrl(DEFAULT_API_URL)
     localStorage.setItem('exchangeRatesUrl', DEFAULT_API_URL)
@@ -53,6 +59,7 @@ function SettingsView() {
     })
   }
 
+  // Close the snackbar
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false })
   }
