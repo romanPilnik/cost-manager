@@ -1,11 +1,18 @@
-// idb.js - This library manages the local IndexedDB storage.
-// It is designed using Promises to handle asynchronous DB operations.
+// idb.module.js - ES module version of the idb wrapper for use in React.
+// Functionality mirrors the vanilla `idb.js` used by the test HTML file.
+
+// This module exports a single `idb` object as the default export.
+// It intentionally does NOT attach to `window` so React consumers can
+// import it as an ES module (e.g., `import idb from './idb.module'`).
+
+import { getExchangeRatesUrl } from './config/api'
 
 const idb = {
-    // Opens or creates the database.
-    openCostsDB: function(name, version) {
+    // Opens or creates the database. Returns a Promise resolving to a
+    // wrapper object exposing `addCost`, `addCostWithDate` and `getReport`.
+    openCostsDB: function(databaseName, databaseVersion) {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(name, version);
+            const request = indexedDB.open(databaseName, databaseVersion);
 
             // Handle schema updates (creating the 'costs' object store).
             request.onupgradeneeded = (event) => {
@@ -16,12 +23,13 @@ const idb = {
                 }
             };
 
+            // On success, wrap the DB instance with helper methods.
             request.onsuccess = () => resolve(idb.createWrapper(request.result));
             request.onerror = () => reject(request.error);
         });
     },
 
-    // A helper to wrap the DB instance with the required methods.
+    // Wrap the raw IDB database instance with convenient async methods.
     createWrapper: function(db) {
         return {
             // Adds a new cost item to the store.
@@ -38,6 +46,7 @@ const idb = {
             // Adds a new cost item but uses the provided `date` if present.
             // This is intended for testing and seeding purposes so tests can
             // insert items with historic dates (different months/years).
+            // Variant that accepts a provided `date` (useful for tests/seeding)
             addCostWithDate: (cost) => {
                 return new Promise((resolve) => {
                     const transaction = db.transaction(['costs'], 'readwrite');
@@ -48,13 +57,12 @@ const idb = {
                     transaction.oncomplete = () => resolve(costToSave);
                 });
             },
-            // Generates a report filtered by month and year.
-            // This method generates a detailed report and calculates the total in a selected currency.
+            // Generates a report filtered by year and month and converts totals
+            // into the requested `currency` using fetched exchange rates.
             getReport: async function(year, month, currency) {
-                // 1. FETCH RATES FIRST
-                // We handle the network request before touching the database.
-                const ratesUrl = localStorage.getItem('exchangeRatesUrl') || 'https://currency-rates-api-gdwf.onrender.com/rates.json';
-                let rates = {}; // No static fallback rates
+                // 1) Fetch exchange rates (user-configurable endpoint)
+                const ratesUrl = getExchangeRatesUrl();
+                let rates = {}; // Will remain empty if fetch fails
 
                 try {
                     const response = await fetch(ratesUrl);
@@ -62,59 +70,52 @@ const idb = {
                     // Extract the rates object from the API response
                     rates = data || rates;
                 } catch (error) {
-                    console.error("Currency fetch failed, no rates available:", error);
+                    // If the fetch fails, proceed with empty rates (1:1 fallback)
+                    console.error('Currency fetch failed, no rates available:', error);
                 }
 
-                // 2. QUERY DATABASE
-                // Now we wrap ONLY the IndexedDB part in a Promise
+                // 2) Read all stored costs from the DB
                 const allCosts = await new Promise((resolve, reject) => {
-                    // Note: Assumes 'db' is available in this scope (from openCostsDB)
                     const transaction = db.transaction(['costs'], 'readonly');
                     const store = transaction.objectStore('costs');
                     const request = store.getAll();
 
-                    request.onerror = () => reject("Error fetching costs from DB");
+                    request.onerror = () => reject('Error fetching costs from DB');
                     request.onsuccess = () => resolve(request.result);
                 });
 
-                // 3. PROCESS DATA
-                // Pure logic (filtering and calculating) happens here synchronously
-                
-                // Filter by year and month
+                // 3) Filter by requested year/month
                 const filtered = allCosts.filter(item => {
                     const d = new Date(item.date);
-                    // Note: Check if your saved dates are strings or Date objects. 
-                    // If strings, new Date() is correct.
+                    // Compare using strict equality per coding standards
                     return d.getFullYear() === year && (d.getMonth() + 1) === month;
                 });
 
-                // Calculate Total using fetched rates
+                // 4) Sum converted totals using fetched rates
                 const totalSum = filtered.reduce((accumulator, item) => {
-                    // Safety check: if currency doesn't exist in rates, default to 1 to prevent NaN
+                    // Default to 1 if a rate is missing to avoid NaN
                     const itemRate = rates[item.currency] || 1;
                     const targetRate = rates[currency] || 1;
-                    
-                    // Formula: (Amount / Original Rate) * Target Rate
+
+                    // Convert: (original / itemRate) * targetRate
                     const amountInUSD = item.sum / itemRate;
                     const convertedAmount = amountInUSD * targetRate;
-                    
+
                     return accumulator + convertedAmount;
                 }, 0);
 
-                // 4. RETURN RESULT
+                // 5) Return the shaped report (include `id` for stable UI keys)
                 return {
                     year: year,
                     month: month,
-                    costs: filtered.map(c => {
-                        // Keep original currency and sum for individual items
-                        return {
-                            sum: c.sum,
-                            currency: c.currency,
-                            category: c.category,
-                            description: c.description,
-                            Date: { day: new Date(c.date).getDate() }
-                        };
-                    }),
+                    costs: filtered.map(c => ({
+                        id: c.id,
+                        sum: c.sum,
+                        currency: c.currency,
+                        category: c.category,
+                        description: c.description,
+                        Date: { day: new Date(c.date).getDate() }
+                    })),
                     total: {
                         currency: currency,
                         total: Number(totalSum.toFixed(2))
@@ -125,5 +126,4 @@ const idb = {
     }
 };
 
-// Exposing to global window for the automated testing.
-window.idb = idb;
+export default idb;

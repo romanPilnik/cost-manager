@@ -8,8 +8,11 @@ import {
   Grid,
   CircularProgress
 } from '@mui/material'
-import { CURRENCIES, MONTHS } from './constants'
+import { CURRENCIES, MONTHS } from '../../config/constants'
 
+// ReportFilters
+// Presents UI controls to select year, month and currency for reports.
+// Prop handlers are passed from the parent and receive primitive values.
 function ReportFilters({
   selectedYear,
   selectedMonth,
@@ -20,12 +23,15 @@ function ReportFilters({
   onGenerateReport,
   loading
 }) {
+  // Build a short range of years for the selector (current year and 5 previous).
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 6 }, (_, i) => currentYear - i)
 
+  // Render the filter controls within a Paper container.
   return (
     <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
       <Grid container spacing={2} alignItems="center" justifyContent="center">
+        {/* Year selector */}
         <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth>
             <InputLabel>Year</InputLabel>
@@ -43,6 +49,7 @@ function ReportFilters({
           </FormControl>
         </Grid>
 
+        {/* Month selector */}
         <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth>
             <InputLabel>Month</InputLabel>
@@ -60,6 +67,7 @@ function ReportFilters({
           </FormControl>
         </Grid>
 
+        {/* Currency selector */}
         <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth>
             <InputLabel>Currency</InputLabel>
@@ -77,6 +85,7 @@ function ReportFilters({
           </FormControl>
         </Grid>
 
+        {/* Generate report button */}
         <Grid item xs={12} sm={6} md={3}>
           <Button
             variant="contained"

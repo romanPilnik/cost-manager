@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import './AddCostView.css'
+import '../styles/AddCostView.css'
 import {
   Box,
   Typography,
@@ -14,20 +14,17 @@ import {
   Snackbar
 } from '@mui/material'
 
-const CURRENCIES = ['USD', 'ILS', 'GBP', 'EURO']
-const CATEGORIES = [
-  'Food & Dining',
-  'Transportation',
-  'Housing',
-  'Utilities',
-  'Entertainment',
-  'Healthcare',
-  'Shopping',
-  'Other'
-]
+import { CURRENCIES, CATEGORIES } from '../config/constants'
+import idb from '../idb.module'
+
+// Module: AddCostView
+// Renders the form to add a new cost and handles client-side validation
+// and persistence via the `idb` wrapper.
 
 function AddCostView() {
+  // Component state
   const [db, setDb] = useState(null)
+  // Form data and initial values
   const [formData, setFormData] = useState({
     sum: '',
     currency: 'USD',
@@ -41,7 +38,8 @@ function AddCostView() {
   useEffect(() => {
     const initDB = async () => {
       try {
-        const database = await window.idb.openCostsDB('costsdb', 1)
+        // Open or create the IndexedDB instance used by the app
+        const database = await idb.openCostsDB('costsdb', 1)
         setDb(database)
       } catch (error) {
         console.error('Failed to open database:', error)
@@ -52,16 +50,19 @@ function AddCostView() {
         })
       }
     }
+    // Initialize DB connection once on mount.
     initDB()
   }, [])
 
   const handleChange = (field) => (event) => {
+    // Update local form state for the given field.
     setFormData({
       ...formData,
       [field]: event.target.value
     })
     // Clear error for this field when user starts typing
     if (errors[field]) {
+      // Clear the individual field error so helper text disappears
       setErrors({
         ...errors,
         [field]: ''
@@ -70,24 +71,30 @@ function AddCostView() {
   }
 
   const validateForm = () => {
+    // Validate fields and collect messages for the user.
     const newErrors = {}
 
-    if (!formData.sum || formData.sum <= 0) {
+    // Amount validation
+    if (!formData.sum || Number(formData.sum) <= 0) {
       newErrors.sum = 'Please enter a valid amount greater than 0'
     }
 
+    // Currency must be selected
     if (!formData.currency) {
       newErrors.currency = 'Please select a currency'
     }
 
+    // Category is required
     if (!formData.category) {
       newErrors.category = 'Please select a category'
     }
 
+    // Description must not be empty
     if (!formData.description.trim()) {
       newErrors.description = 'Please enter a description'
     }
 
+    // Publish collected errors and indicate overall validity
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -95,6 +102,7 @@ function AddCostView() {
   const handleSubmit = async (event) => {
     event.preventDefault()
 
+    // Validate input before attempting to save.
     if (!validateForm()) {
       return
     }
@@ -117,15 +125,17 @@ function AddCostView() {
         description: formData.description
       }
 
+      // Use DB wrapper to persist the cost. `addCost` attaches current date.
       await db.addCost(costData)
 
+      // Notify user of success
       setSnackbar({
         open: true,
         message: 'Cost added successfully!',
         severity: 'success'
       })
 
-      // Reset form after successful submission
+      // Reset form after successful submission so user can add another cost
       setFormData({
         sum: '',
         currency: 'USD',
@@ -148,6 +158,7 @@ function AddCostView() {
 
   return (
     <Box className="add-cost-view">
+      {/* Page header */}
       <Typography variant="h4" gutterBottom className="page-header">
         Add New Cost
       </Typography>
@@ -160,6 +171,7 @@ function AddCostView() {
             label="Amount"
             type="number"
             value={formData.sum}
+            /* Input value, change handler and validation helpers */
             onChange={handleChange('sum')}
             error={!!errors.sum}
             helperText={errors.sum}
@@ -177,6 +189,7 @@ function AddCostView() {
               onChange={handleChange('currency')}
               required
             >
+              {/* Currency options populated from shared constants */}
               {CURRENCIES.map((currency) => (
                 <MenuItem key={currency} value={currency}>
                   {currency}
@@ -194,6 +207,7 @@ function AddCostView() {
               onChange={handleChange('category')}
               required
             >
+              {/* Category options reused from shared constants */}
               {CATEGORIES.map((category) => (
                 <MenuItem key={category} value={category}>
                   {category}
@@ -214,6 +228,7 @@ function AddCostView() {
             multiline
             rows={3}
             value={formData.description}
+            /* Multi-line description input with helper text */
             onChange={handleChange('description')}
             error={!!errors.description}
             helperText={errors.description}
@@ -229,6 +244,7 @@ function AddCostView() {
             size="large"
             fullWidth
             className="add-cost-button"
+            /* Primary submit action for the form */
           >
             Add Cost
           </Button>
@@ -242,6 +258,7 @@ function AddCostView() {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
+        {/* Notification content shown in a dismissible alert */}
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>

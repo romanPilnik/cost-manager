@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import './SettingsView.css'
+import '../styles/SettingsView.css'
 import {
   Box,
   Typography,
@@ -9,16 +9,14 @@ import {
   Alert,
   Snackbar
 } from '@mui/material'
+import { DEFAULT_EXCHANGE_RATES_URL, getExchangeRatesUrl, setExchangeRatesUrl } from '../config/api'
 
-// Default API URL for exchange rates
-const DEFAULT_API_URL = 'https://currency-rates-api-gdwf.onrender.com/rates.json'
+// SettingsView: configure application-level settings such as the
+// exchange rates API URL. Uses localStorage for persistence.
 
 function SettingsView() {
   // Initialize API URL from localStorage or default
-  const [apiUrl, setApiUrl] = useState(() => {
-    const savedUrl = localStorage.getItem('exchangeRatesUrl')
-    return savedUrl || DEFAULT_API_URL
-  })
+  const [apiUrl, setApiUrl] = useState(() => getExchangeRatesUrl())
   // State for snackbar notifications
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' })
 
@@ -31,7 +29,7 @@ function SettingsView() {
   const handleSave = () => {
     try {
       // Save to localStorage
-      localStorage.setItem('exchangeRatesUrl', apiUrl)
+      setExchangeRatesUrl(apiUrl)
 
       setSnackbar({
         open: true,
@@ -39,6 +37,7 @@ function SettingsView() {
         severity: 'success'
       })
     } catch (error) {
+      // Log and notify user when saving fails (e.g., storage quota)
       console.error('Failed to save settings:', error)
       setSnackbar({
         open: true,
@@ -50,8 +49,9 @@ function SettingsView() {
 
   // Reset to default API URL
   const handleReset = () => {
-    setApiUrl(DEFAULT_API_URL)
-    localStorage.setItem('exchangeRatesUrl', DEFAULT_API_URL)
+    // Reset the stored API URL and inform the user
+    setApiUrl(DEFAULT_EXCHANGE_RATES_URL)
+    setExchangeRatesUrl(DEFAULT_EXCHANGE_RATES_URL)
 
     setSnackbar({
       open: true,
@@ -67,7 +67,7 @@ function SettingsView() {
 
   return (
     <Box className="settings-view">
-      <Typography variant="h4" gutterBottom className="settings-header">
+      <Typography variant="h4" gutterBottom className="page-header">
         Settings
       </Typography>
 
@@ -75,22 +75,25 @@ function SettingsView() {
         <Typography variant="h6" gutterBottom>
           Exchange Rate API Configuration
         </Typography>
-
+        {/* Short description about the expected API output */}
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Configure the API URL for fetching currency exchange rates. The API should return exchange rates in JSON format.
         </Typography>
 
+        {/* Input where user provides the exchange rates API URL */}
         <TextField
           fullWidth
           label="API URL"
           value={apiUrl}
           onChange={handleChange}
-          placeholder={DEFAULT_API_URL}
+          placeholder={DEFAULT_EXCHANGE_RATES_URL}
           helperText="Enter the URL for the exchange rate API"
           sx={{ mb: 3 }}
         />
 
+        {/* Actions: Save and Reset */}
         <Box className="settings-button-group">
+          {/* Save the current API URL to localStorage */}
           <Button
             variant="contained"
             color="primary"
@@ -101,6 +104,7 @@ function SettingsView() {
             Save Settings
           </Button>
 
+          {/* Reset the API URL to the default value */}
           <Button
             variant="outlined"
             color="secondary"
@@ -111,17 +115,18 @@ function SettingsView() {
             Reset to Default
           </Button>
         </Box>
-
+        {/* Display the current default API URL for reference */}
         <Box className="settings-info-box">
           <Typography variant="subtitle2" gutterBottom>
             Default API URL:
           </Typography>
           <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
-            {DEFAULT_API_URL}
+            {DEFAULT_EXCHANGE_RATES_URL}
           </Typography>
         </Box>
       </Paper>
 
+      {/* Transient notifications shown at the bottom-center of the screen */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

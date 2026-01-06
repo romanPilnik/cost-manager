@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test idb.js (public)</title>
+</head>
+<body>
+    <h1>Check the Console (F12) to see results</h1>
+    <script src="../public/idb.js"></script>
+    <script>
+        // Simple test runner that exercises the vanilla `public/idb.js` API.
+        async function test() {
+            try {
+                // Open the DB and get the wrapper methods (addCost/getReport).
+                const db = await idb.openCostsDB("costsdb", 1);
+                if (db) console.log("✅ creating db succeeded");
+
+                // Add a sample cost to verify writes work correctly.
+                const result1 = await db.addCost({ sum: 200, currency: "USD", category: "FOOD", description: "pizza" });
+                if (result1) console.log("✅ adding 1st cost item succeeded", result1);
+
+                // Add a second sample cost (different category) to create multiple rows.
+                const result2 = await db.addCost({ sum: 400, currency: "USD", category: "CAR", description: "fuel" });
+                if (result2) console.log("✅ adding 2nd cost item succeeded", result2);
+
+                // Request a report for the current month to verify aggregation and conversion.
+                const currentMonth = new Date().getMonth() + 1;
+                const currentYear = new Date().getFullYear();
+                const report = await db.getReport(currentYear, currentMonth, "USD");
+                console.log("📊 Report Result:", report);
+            } catch (error) {
+                // Surface any unexpected error during the test to the console.
+                console.error("❌ Test failed:", error);
+            }
+        }
+
+        // Execute the test immediately on load for convenience.
+        test();
+    </script>
+</body>
+</html>

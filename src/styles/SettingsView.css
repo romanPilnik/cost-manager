@@ -18,16 +18,9 @@
   animation: fadeIn 400ms ease-in-out;
 }
 
-/* Page header with gradient text effect */
-.settings-header {
-  background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 2px 4px rgba(129, 140, 248, 0.3));
-  margin-bottom: 32px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+/* Page header - centered like ReportsView and AddCostView */
+.settings-view .page-header {
+  text-align: center;
 }
 
 /* Settings panel with glassmorphism effect */
@@ -41,6 +34,8 @@
   padding: 32px !important;
   max-width: 800px;
   margin-top: 24px !important;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Section header styling */
@@ -228,11 +223,6 @@
   .settings-panel {
     padding: 20px !important;
     margin-top: 16px !important;
-  }
-
-  .settings-header {
-    font-size: 1.75rem;
-    margin-bottom: 20px;
   }
 
   .settings-button-group {
